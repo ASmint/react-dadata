@@ -123,6 +123,25 @@ var ReactDadata = (function (_super) {
             });
             return words;
         };
+        _this.renderInput = function () {
+            var customInput = _this.props.customInput || React.createElement("input", { className: "react-dadata__input" });
+            var customInputRef = _this.props.customInputRef || 'ref';
+            return React.cloneElement(customInput, (_a = {
+                    placeholder: _this.props.placeholder ? _this.props.placeholder : '',
+                    value: _this.state.query
+                },
+                _a[customInputRef] = function (input) { _this.textInput = input; },
+                _a.onChange = _this.onInputChange,
+                _a.onKeyPress = _this.onKeyPress,
+                _a.onKeyDown = _this.onKeyPress,
+                _a.onFocus = _this.onInputFocus,
+                _a.onBlur = _this.onInputBlur,
+                _a.validate = _this.props.validate,
+                _a.autoComplete = _this.props.autocomplete ? _this.props.autocomplete : 'off',
+                _a.disabled = _this.props.disabled ? _this.props.disabled : false,
+                _a));
+            var _a;
+        };
         _this.state = {
             query: _this.props.query ? _this.props.query : '',
             inputQuery: _this.props.query ? _this.props.query : '',
@@ -143,8 +162,7 @@ var ReactDadata = (function (_super) {
     ReactDadata.prototype.render = function () {
         var _this = this;
         return (React.createElement("div", { className: "react-dadata react-dadata__container" },
-            React.createElement("div", null,
-                React.createElement("input", { className: "react-dadata__input", placeholder: this.props.placeholder ? this.props.placeholder : '', value: this.state.query, ref: function (input) { _this.textInput = input; }, onChange: this.onInputChange, onKeyPress: this.onKeyPress, onKeyDown: this.onKeyPress, onFocus: this.onInputFocus, onBlur: this.onInputBlur, validate: this.props.validate, autoComplete: this.props.autocomplete ? this.props.autocomplete : 'off', disabled: this.props.disabled ? this.props.disabled : false })),
+            React.createElement("div", null, this.renderInput()),
             this.state.inputFocused && this.state.suggestionsVisible && this.state.suggestions && this.state.suggestions.length > 0 && React.createElement("div", { className: "react-dadata__suggestions" },
                 React.createElement("div", { className: "react-dadata__suggestion-note" }, "\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0432\u0430\u0440\u0438\u0430\u043D\u0442 \u0438\u043B\u0438 \u043F\u0440\u043E\u0434\u043E\u043B\u0436\u0438\u0442\u0435 \u0432\u0432\u043E\u0434"),
                 this.state.suggestions.map(function (suggestion, index) {

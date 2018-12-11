@@ -105,6 +105,9 @@ export namespace ReactDadata {
     onChange?: (suggestion: DadataSuggestion) => void
     autocomplete?: string
     validate?: (value: string) => void
+    disabled?: boolean
+    customInput?: React.ReactNode
+    customInputRef?: string
   }
 
   export interface State {
@@ -265,22 +268,30 @@ export class ReactDadata extends React.PureComponent<ReactDadata.Props, ReactDad
     return words;
   };
 
+  renderInput = () => {
+    const customInput: any = this.props.customInput || <input className="react-dadata__input" />;
+    const customInputRef = this.props.customInputRef || 'ref';
+
+    return React.cloneElement(customInput, {
+      placeholder: this.props.placeholder ? this.props.placeholder : '',
+      value: this.state.query,
+      [customInputRef]: (input) => { this.textInput = input as HTMLInputElement; },
+      onChange: this.onInputChange,
+      onKeyPress: this.onKeyPress,
+      onKeyDown: this.onKeyPress,
+      onFocus: this.onInputFocus,
+      onBlur: this.onInputBlur,
+      validate: this.props.validate,
+      autoComplete: this.props.autocomplete ? this.props.autocomplete : 'off',
+      disabled: this.props.disabled ? this.props.disabled : false,
+    })
+  }
+
   render() {
     return (
       <div className="react-dadata react-dadata__container">
         <div>
-          <input className="react-dadata__input"
-                 placeholder={this.props.placeholder ? this.props.placeholder : ''}
-                 value={this.state.query}
-                 ref={ (input) => { this.textInput = input as HTMLInputElement; } }
-                 onChange={this.onInputChange}
-                 onKeyPress={this.onKeyPress}
-                 onKeyDown={this.onKeyPress}
-                 onFocus={this.onInputFocus}
-                 onBlur={this.onInputBlur}
-                 validate={this.props.validate}
-                 autoComplete={this.props.autocomplete ? this.props.autocomplete : 'off'}
-          />
+          {this.renderInput()}
         </div>
         {this.state.inputFocused && this.state.suggestionsVisible && this.state.suggestions && this.state.suggestions.length > 0 && <div className="react-dadata__suggestions">
           <div className="react-dadata__suggestion-note">Выберите вариант или продолжите ввод</div>

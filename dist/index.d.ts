@@ -97,6 +97,8 @@ export declare namespace ReactDadata {
         autocomplete?: string;
         validate?: (value: string) => void;
         disabled?: boolean;
+        customInput?: React.ReactNode;
+        customInputRef?: string;
     }
     interface State {
         query: string;
@@ -128,5 +130,18 @@ export declare class ReactDadata extends React.PureComponent<ReactDadata.Props, 
     selectSuggestion: (index: number) => void;
     setCursorToEnd: (element: any) => void;
     getHighlightWords: () => string[];
+    renderInput: () => React.DetailedReactHTMLElement<{
+        [x: string]: string | boolean | ((value: string) => void) | ((event: React.ChangeEvent<HTMLInputElement>) => void) | ((event: React.KeyboardEvent<HTMLInputElement>) => void) | undefined;
+        placeholder: string;
+        value: string;
+        onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+        onKeyPress: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+        onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+        onFocus: () => void;
+        onBlur: () => void;
+        validate: ((value: string) => void) | undefined;
+        autoComplete: string;
+        disabled: boolean;
+    }, HTMLElement>;
     render(): JSX.Element;
 }
