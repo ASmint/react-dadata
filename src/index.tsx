@@ -149,21 +149,24 @@ export class ReactDadata extends React.PureComponent<ReactDadata.Props, ReactDad
 
   componentDidMount() {
     if (this.props.autoload && this.state.query) {
-      this.fetchSuggestions();
+      this.fetchSuggestions()
+      .then(responseJson => this.setSuggestionsToState(responseJson));
     }
   };
 
   onInputFocus = () => {
     this.setState({inputFocused: true});
     if (this.state.suggestions.length == 0) {
-      this.fetchSuggestions();
+      this.fetchSuggestions()
+      .then(responseJson => this.setSuggestionsToState(responseJson));
     }
   };
 
   onInputBlur = () => {
     this.setState({inputFocused: false});
     if (this.state.suggestions.length == 0) {
-      this.fetchSuggestions();
+      this.fetchSuggestions()
+      .then(responseJson => this.setSuggestionsToState(responseJson));
     }
   };
 
@@ -173,7 +176,8 @@ export class ReactDadata extends React.PureComponent<ReactDadata.Props, ReactDad
       if (this.props.validate){
         this.props.validate(value);
       };
-      this.fetchSuggestions();
+      this.fetchSuggestions()
+      .then(responseJson => this.setSuggestionsToState(responseJson));
     });
   };
 
@@ -203,33 +207,40 @@ export class ReactDadata extends React.PureComponent<ReactDadata.Props, ReactDad
     }
   };
 
-  fetchSuggestions = () => {
-    if (this.xhr) {
-      this.xhr.abort();
-    }
-    this.xhr = new XMLHttpRequest();
-    this.xhr.open("POST", "https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/address?5");
-    this.xhr.setRequestHeader("Accept", "application/json");
-    this.xhr.setRequestHeader("Authorization", `Token ${this.props.token}`);
-    this.xhr.setRequestHeader("Content-Type", "application/json");
-    this.xhr.send(JSON.stringify({
-      query: this.state.query,
-      count: 10
-    }));
-
-    this.xhr.onreadystatechange = () => {
-      if (this.xhr.readyState != 4) {
-        return;
+  fetchSuggestions = (count: number = 10) => {
+    return new Promise((resolve, reject) => {
+      if (this.xhr) {
+        this.xhr.abort();
       }
-
-      if (this.xhr.status == 200) {
-        const responseJson = JSON.parse(this.xhr.response);
-        if (responseJson && responseJson.suggestions) {
-          this.setState({suggestions: responseJson.suggestions, suggestionIndex: -1});
+      this.xhr = new XMLHttpRequest();
+      this.xhr.open("POST", "https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/address?5");
+      this.xhr.setRequestHeader("Accept", "application/json");
+      this.xhr.setRequestHeader("Authorization", `Token ${this.props.token}`);
+      this.xhr.setRequestHeader("Content-Type", "application/json");
+      this.xhr.send(JSON.stringify({
+        query: this.state.query,
+        count
+      }));
+  
+      this.xhr.onreadystatechange = () => {
+        if (this.xhr.readyState != 4) {
+          return;
         }
-      }
-    };
+  
+        if (this.xhr.status == 200) {
+          resolve(JSON.parse(this.xhr.response));
+        } else {
+          reject (this.xhr.status);
+        }
+      };
+    })
   };
+
+  setSuggestionsToState = (responseJson: any) => {
+    if (responseJson && responseJson.suggestions) {
+      this.setState({suggestions: responseJson.suggestions, suggestionIndex: -1});
+    }
+  }
 
   onSuggestionClick = (index: number, event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
@@ -239,13 +250,15 @@ export class ReactDadata extends React.PureComponent<ReactDadata.Props, ReactDad
   selectSuggestion = (index: number) => {
     if (this.state.suggestions.length >= index - 1) {
       this.setState({query: this.state.suggestions[index].value, suggestionsVisible: false, inputQuery: this.state.suggestions[index].value}, () => {
-        this.fetchSuggestions();
+        this.fetchSuggestions(1)
+        .then((responseJson: any) => {
+          if (this.props.onChange) {
+            this.props.onChange(responseJson.suggestions[0]);
+          }
+          this.setSuggestionsToState(responseJson)
+        });
         setTimeout(() => this.setCursorToEnd(this.textInput), 100);
       });
-
-      if (this.props.onChange) {
-        this.props.onChange(this.state.suggestions[index]);
-      }
     }
   };
 

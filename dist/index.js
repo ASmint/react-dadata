@@ -20,13 +20,15 @@ var ReactDadata = (function (_super) {
         _this.onInputFocus = function () {
             _this.setState({ inputFocused: true });
             if (_this.state.suggestions.length == 0) {
-                _this.fetchSuggestions();
+                _this.fetchSuggestions()
+                    .then(function (responseJson) { return _this.setSuggestionsToState(responseJson); });
             }
         };
         _this.onInputBlur = function () {
             _this.setState({ inputFocused: false });
             if (_this.state.suggestions.length == 0) {
-                _this.fetchSuggestions();
+                _this.fetchSuggestions()
+                    .then(function (responseJson) { return _this.setSuggestionsToState(responseJson); });
             }
         };
         _this.onInputChange = function (event) {
@@ -36,7 +38,8 @@ var ReactDadata = (function (_super) {
                     _this.props.validate(value);
                 }
                 ;
-                _this.fetchSuggestions();
+                _this.fetchSuggestions()
+                    .then(function (responseJson) { return _this.setSuggestionsToState(responseJson); });
             });
         };
         _this.onKeyPress = function (event) {
@@ -66,30 +69,38 @@ var ReactDadata = (function (_super) {
                 }
             }
         };
-        _this.fetchSuggestions = function () {
-            if (_this.xhr) {
-                _this.xhr.abort();
-            }
-            _this.xhr = new XMLHttpRequest();
-            _this.xhr.open("POST", "https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/address?5");
-            _this.xhr.setRequestHeader("Accept", "application/json");
-            _this.xhr.setRequestHeader("Authorization", "Token " + _this.props.token);
-            _this.xhr.setRequestHeader("Content-Type", "application/json");
-            _this.xhr.send(JSON.stringify({
-                query: _this.state.query,
-                count: 10
-            }));
-            _this.xhr.onreadystatechange = function () {
-                if (_this.xhr.readyState != 4) {
-                    return;
+        _this.fetchSuggestions = function (count) {
+            if (count === void 0) { count = 10; }
+            return new Promise(function (resolve, reject) {
+                if (_this.xhr) {
+                    _this.xhr.abort();
                 }
-                if (_this.xhr.status == 200) {
-                    var responseJson = JSON.parse(_this.xhr.response);
-                    if (responseJson && responseJson.suggestions) {
-                        _this.setState({ suggestions: responseJson.suggestions, suggestionIndex: -1 });
+                _this.xhr = new XMLHttpRequest();
+                _this.xhr.open("POST", "https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/address?5");
+                _this.xhr.setRequestHeader("Accept", "application/json");
+                _this.xhr.setRequestHeader("Authorization", "Token " + _this.props.token);
+                _this.xhr.setRequestHeader("Content-Type", "application/json");
+                _this.xhr.send(JSON.stringify({
+                    query: _this.state.query,
+                    count: count
+                }));
+                _this.xhr.onreadystatechange = function () {
+                    if (_this.xhr.readyState != 4) {
+                        return;
                     }
-                }
-            };
+                    if (_this.xhr.status == 200) {
+                        resolve(JSON.parse(_this.xhr.response));
+                    }
+                    else {
+                        reject(_this.xhr.status);
+                    }
+                };
+            });
+        };
+        _this.setSuggestionsToState = function (responseJson) {
+            if (responseJson && responseJson.suggestions) {
+                _this.setState({ suggestions: responseJson.suggestions, suggestionIndex: -1 });
+            }
         };
         _this.onSuggestionClick = function (index, event) {
             event.stopPropagation();
@@ -98,12 +109,19 @@ var ReactDadata = (function (_super) {
         _this.selectSuggestion = function (index) {
             if (_this.state.suggestions.length >= index - 1) {
                 _this.setState({ query: _this.state.suggestions[index].value, suggestionsVisible: false, inputQuery: _this.state.suggestions[index].value }, function () {
-                    _this.fetchSuggestions();
+                    _this.fetchSuggestions(1)
+                        .then(function (responseJson) {
+                        if (_this.props.onChange) {
+                            console.log(responseJson.suggestions);
+                            _this.props.onChange(responseJson.suggestions[0]);
+                        }
+                        _this.setSuggestionsToState(responseJson);
+                    });
                     setTimeout(function () { return _this.setCursorToEnd(_this.textInput); }, 100);
                 });
-                if (_this.props.onChange) {
-                    _this.props.onChange(_this.state.suggestions[index]);
-                }
+                // if (this.props.onChange) {
+                //   this.props.onChange(this.state.suggestions[index]);
+                // }
             }
         };
         _this.setCursorToEnd = function (element) {
@@ -154,8 +172,10 @@ var ReactDadata = (function (_super) {
         return _this;
     }
     ReactDadata.prototype.componentDidMount = function () {
+        var _this = this;
         if (this.props.autoload && this.state.query) {
-            this.fetchSuggestions();
+            this.fetchSuggestions()
+                .then(function (responseJson) { return _this.setSuggestionsToState(responseJson); });
         }
     };
     ;
