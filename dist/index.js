@@ -112,16 +112,12 @@ var ReactDadata = (function (_super) {
                     _this.fetchSuggestions(1)
                         .then(function (responseJson) {
                         if (_this.props.onChange) {
-                            console.log(responseJson.suggestions);
                             _this.props.onChange(responseJson.suggestions[0]);
                         }
                         _this.setSuggestionsToState(responseJson);
                     });
                     setTimeout(function () { return _this.setCursorToEnd(_this.textInput); }, 100);
                 });
-                // if (this.props.onChange) {
-                //   this.props.onChange(this.state.suggestions[index]);
-                // }
             }
         };
         _this.setCursorToEnd = function (element) {
