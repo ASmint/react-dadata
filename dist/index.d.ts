@@ -99,7 +99,7 @@ export declare namespace ReactDadata {
         disabled?: boolean;
         customInput?: React.ReactNode;
         customInputRef?: string;
-        updateStateFromProps?: () => void;
+        updateStateFromProps?: (callback: any) => void;
     }
     interface State {
         query: string;

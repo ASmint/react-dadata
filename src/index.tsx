@@ -108,7 +108,7 @@ export namespace ReactDadata {
     disabled?: boolean
     customInput?: React.ReactNode
     customInputRef?: string
-    updateStateFromProps?: () => void
+    updateStateFromProps?: (callback: any) => void
   }
 
   export interface State {
@@ -152,6 +152,11 @@ export class ReactDadata extends React.PureComponent<ReactDadata.Props, ReactDad
     if (this.props.autoload && this.state.query) {
       this.fetchSuggestions()
       .then(responseJson => this.setSuggestionsToState(responseJson));
+    }
+    if (this.props.updateStateFromProps) {
+      this.props.updateStateFromProps({
+        updateStateFromProps: () => this.updateStateFromProps(),
+      })
     }
   };
 

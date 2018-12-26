@@ -176,6 +176,11 @@ var ReactDadata = (function (_super) {
             this.fetchSuggestions()
                 .then(function (responseJson) { return _this.setSuggestionsToState(responseJson); });
         }
+        if (this.props.updateStateFromProps) {
+            this.props.updateStateFromProps({
+                updateStateFromProps: function () { return _this.updateStateFromProps(); },
+            });
+        }
     };
     ;
     ReactDadata.prototype.render = function () {
