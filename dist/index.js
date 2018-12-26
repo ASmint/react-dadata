@@ -156,6 +156,9 @@ var ReactDadata = (function (_super) {
                 _a));
             var _a;
         };
+        _this.updateStateFromProps = function () {
+            _this.setState(function () { return ({ query: _this.props.query, inputQuery: _this.props.query, }); });
+        };
         _this.state = {
             query: _this.props.query ? _this.props.query : '',
             inputQuery: _this.props.query ? _this.props.query : '',

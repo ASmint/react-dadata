@@ -99,6 +99,7 @@ export declare namespace ReactDadata {
         disabled?: boolean;
         customInput?: React.ReactNode;
         customInputRef?: string;
+        updateStateFromProps?: () => void;
     }
     interface State {
         query: string;
@@ -144,5 +145,6 @@ export declare class ReactDadata extends React.PureComponent<ReactDadata.Props, 
         autoComplete: string;
         disabled: boolean;
     }, HTMLElement>;
+    updateStateFromProps: () => void;
     render(): JSX.Element;
 }

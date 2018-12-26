@@ -108,6 +108,7 @@ export namespace ReactDadata {
     disabled?: boolean
     customInput?: React.ReactNode
     customInputRef?: string
+    updateStateFromProps?: () => void
   }
 
   export interface State {
@@ -298,6 +299,10 @@ export class ReactDadata extends React.PureComponent<ReactDadata.Props, ReactDad
       autoComplete: this.props.autocomplete ? this.props.autocomplete : 'off',
       disabled: this.props.disabled ? this.props.disabled : false,
     })
+  }
+
+  updateStateFromProps = () => {
+    this.setState(() => ({query: this.props.query, inputQuery: this.props.query,}));
   }
 
   render() {
