@@ -26,6 +26,8 @@
   },
   "homepage": "https://github.com/vitalybaev/react-dadata#readme",
   "dependencies": {
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0",
     "react-highlight-words": "^0.15.0"
   },
   "devDependencies": {
