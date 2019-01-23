@@ -2,12 +2,6 @@ import * as React from 'react';
 import * as Highlighter from 'react-highlight-words';
 import './react-dadata.css';
 
-// declare module 'react' {
-//      interface DetailedHTMLProps<T> {
-//         validate?: (value: string) => void
-//     }
-// }
-
 declare module 'react' {
      interface InputHTMLAttributes<T> {
         validate?: (value: string) => void
@@ -97,11 +91,14 @@ export namespace ReactDadata {
     unparsed_parts: null
   }
 
+  export type BoundsType = 'region' | 'area' | 'city' | 'settlement' | 'street' | 'house'
+
   export interface Props  {
     token: string
     placeholder?: string
     query?: string
     autoload?: boolean
+    count?: number
     onChange?: (suggestion: DadataSuggestion) => void
     autocomplete?: string
     validate?: (value: string) => void
@@ -109,6 +106,10 @@ export namespace ReactDadata {
     customInput?: React.ReactNode
     customInputRef?: string
     updateStateFromProps?: (callback: any) => void
+    fromBound?: BoundsType
+    toBound?: BoundsType
+    address?: DadataSuggestion
+    className?: string
   }
 
   export interface State {
@@ -127,12 +128,12 @@ export class ReactDadata extends React.PureComponent<ReactDadata.Props, ReactDad
   /**
    * HTML-input
    */
-  protected textInput: HTMLInputElement;
+  protected textInput?: HTMLInputElement;
 
   /**
    * XMLHttpRequest instance
    */
-  protected xhr: XMLHttpRequest;
+  protected xhr?: XMLHttpRequest;
 
   constructor(props: ReactDadata.Props) {
     super(props);
@@ -184,6 +185,7 @@ export class ReactDadata extends React.PureComponent<ReactDadata.Props, ReactDad
       };
       this.fetchSuggestions()
       .then(responseJson => this.setSuggestionsToState(responseJson));
+
     });
   };
 
@@ -223,13 +225,42 @@ export class ReactDadata extends React.PureComponent<ReactDadata.Props, ReactDad
       this.xhr.setRequestHeader("Accept", "application/json");
       this.xhr.setRequestHeader("Authorization", `Token ${this.props.token}`);
       this.xhr.setRequestHeader("Content-Type", "application/json");
-      this.xhr.send(JSON.stringify({
+      let requestPayload: any = {
         query: this.state.query,
-        count
-      }));
+        count: this.props.count ? this.props.count : count,
+      };
+      // Checking for granular suggestions
+      if (this.props.fromBound && this.props.toBound) {
+        // When using granular suggestion, all dadata components have to receive address property that contains shared address info.
+        if (!this.props.address) {
+          throw new Error("You have to pass address property with DaData address object to connect separate components");
+        }
+        requestPayload.from_bound = {value: this.props.fromBound};
+        requestPayload.to_bound = {value: this.props.toBound};
+        requestPayload.restrict_value = true;
+  
+        if (this.props.address.data) {
+          // Define location limitation
+          let location: any = {};
+          if (this.props.address.data.region_fias_id) {
+            location.region_fias_id = this.props.address.data.region_fias_id;
+          }
+          if (this.props.address.data.city_fias_id) {
+            location.city_fias_id = this.props.address.data.city_fias_id;
+          }
+          if (this.props.address.data.settlement_fias_id) {
+            location.settlement_fias_id = this.props.address.data.settlement_fias_id;
+          }
+          if (this.props.address.data.street_fias_id) {
+            location.street_fias_id = this.props.address.data.street_fias_id;
+          }
+          requestPayload.locations = [location];
+        }
+      }
+      this.xhr.send(JSON.stringify(requestPayload));
   
       this.xhr.onreadystatechange = () => {
-        if (this.xhr.readyState != 4) {
+        if (!this.xhr || this.xhr.readyState != 4) {
           return;
         }
   
@@ -287,8 +318,8 @@ export class ReactDadata extends React.PureComponent<ReactDadata.Props, ReactDad
     return words;
   };
 
-  renderInput = () => {
-    const customInput: any = this.props.customInput || <input className="react-dadata__input" />;
+  renderInput = (classNames: any) => {
+    const customInput: any = this.props.customInput || <input className={classNames.join(' ')} />;
     const customInputRef = this.props.customInputRef || 'ref';
 
     return React.cloneElement(customInput, {
@@ -307,14 +338,19 @@ export class ReactDadata extends React.PureComponent<ReactDadata.Props, ReactDad
   }
 
   updateStateFromProps = () => {
-    this.setState(() => ({query: this.props.query, inputQuery: this.props.query,}));
+    this.setState(() => ({query: `${this.props.query}`, inputQuery: `${this.props.query}`,}));
   }
 
   render() {
+    let classNames = ['react-dadata__input'];
+    if (this.props.className) {
+      classNames.push(this.props.className)
+    }
+
     return (
       <div className="react-dadata react-dadata__container">
         <div>
-          {this.renderInput()}
+          {this.renderInput(classNames)}
         </div>
         {this.state.inputFocused && this.state.suggestionsVisible && this.state.suggestions && this.state.suggestions.length > 0 && <div className="react-dadata__suggestions">
           <div className="react-dadata__suggestion-note">Выберите вариант или продолжите ввод</div>
@@ -323,7 +359,7 @@ export class ReactDadata extends React.PureComponent<ReactDadata.Props, ReactDad
             if (index == this.state.suggestionIndex) {
               suggestionClass += ' react-dadata__suggestion--current';
             }
-            return <div key={suggestion.value} onMouseDown={this.onSuggestionClick.bind(this, index)} className={suggestionClass}><Highlighter highlightClassName="react-dadata--highlighted" searchWords={this.getHighlightWords()} textToHighlight={suggestion.value}/></div>
+            return <div key={suggestion.value} onMouseDown={this.onSuggestionClick.bind(this, index)} className={suggestionClass}><Highlighter highlightClassName="react-dadata--highlighted" autoEscape={true} searchWords={this.getHighlightWords()} textToHighlight={suggestion.value}/></div>
           })}
         </div>}
       </div>

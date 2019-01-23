@@ -1,8 +1,11 @@
 "use strict";
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -13,7 +16,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var React = require("react");
 var Highlighter = require("react-highlight-words");
 require("./react-dadata.css");
-var ReactDadata = (function (_super) {
+var ReactDadata = /** @class */ (function (_super) {
     __extends(ReactDadata, _super);
     function ReactDadata(props) {
         var _this = _super.call(this, props) || this;
@@ -80,12 +83,40 @@ var ReactDadata = (function (_super) {
                 _this.xhr.setRequestHeader("Accept", "application/json");
                 _this.xhr.setRequestHeader("Authorization", "Token " + _this.props.token);
                 _this.xhr.setRequestHeader("Content-Type", "application/json");
-                _this.xhr.send(JSON.stringify({
+                var requestPayload = {
                     query: _this.state.query,
-                    count: count
-                }));
+                    count: _this.props.count ? _this.props.count : count,
+                };
+                // Checking for granular suggestions
+                if (_this.props.fromBound && _this.props.toBound) {
+                    // When using granular suggestion, all dadata components have to receive address property that contains shared address info.
+                    if (!_this.props.address) {
+                        throw new Error("You have to pass address property with DaData address object to connect separate components");
+                    }
+                    requestPayload.from_bound = { value: _this.props.fromBound };
+                    requestPayload.to_bound = { value: _this.props.toBound };
+                    requestPayload.restrict_value = true;
+                    if (_this.props.address.data) {
+                        // Define location limitation
+                        var location_1 = {};
+                        if (_this.props.address.data.region_fias_id) {
+                            location_1.region_fias_id = _this.props.address.data.region_fias_id;
+                        }
+                        if (_this.props.address.data.city_fias_id) {
+                            location_1.city_fias_id = _this.props.address.data.city_fias_id;
+                        }
+                        if (_this.props.address.data.settlement_fias_id) {
+                            location_1.settlement_fias_id = _this.props.address.data.settlement_fias_id;
+                        }
+                        if (_this.props.address.data.street_fias_id) {
+                            location_1.street_fias_id = _this.props.address.data.street_fias_id;
+                        }
+                        requestPayload.locations = [location_1];
+                    }
+                }
+                _this.xhr.send(JSON.stringify(requestPayload));
                 _this.xhr.onreadystatechange = function () {
-                    if (_this.xhr.readyState != 4) {
+                    if (!_this.xhr || _this.xhr.readyState != 4) {
                         return;
                     }
                     if (_this.xhr.status == 200) {
@@ -137,8 +168,9 @@ var ReactDadata = (function (_super) {
             });
             return words;
         };
-        _this.renderInput = function () {
-            var customInput = _this.props.customInput || React.createElement("input", { className: "react-dadata__input" });
+        _this.renderInput = function (classNames) {
+            var _a;
+            var customInput = _this.props.customInput || React.createElement("input", { className: classNames.join(' ') });
             var customInputRef = _this.props.customInputRef || 'ref';
             return React.cloneElement(customInput, (_a = {
                     placeholder: _this.props.placeholder ? _this.props.placeholder : '',
@@ -154,10 +186,9 @@ var ReactDadata = (function (_super) {
                 _a.autoComplete = _this.props.autocomplete ? _this.props.autocomplete : 'off',
                 _a.disabled = _this.props.disabled ? _this.props.disabled : false,
                 _a));
-            var _a;
         };
         _this.updateStateFromProps = function () {
-            _this.setState(function () { return ({ query: _this.props.query, inputQuery: _this.props.query, }); });
+            _this.setState(function () { return ({ query: "" + _this.props.query, inputQuery: "" + _this.props.query, }); });
         };
         _this.state = {
             query: _this.props.query ? _this.props.query : '',
@@ -185,8 +216,12 @@ var ReactDadata = (function (_super) {
     ;
     ReactDadata.prototype.render = function () {
         var _this = this;
+        var classNames = ['react-dadata__input'];
+        if (this.props.className) {
+            classNames.push(this.props.className);
+        }
         return (React.createElement("div", { className: "react-dadata react-dadata__container" },
-            React.createElement("div", null, this.renderInput()),
+            React.createElement("div", null, this.renderInput(classNames)),
             this.state.inputFocused && this.state.suggestionsVisible && this.state.suggestions && this.state.suggestions.length > 0 && React.createElement("div", { className: "react-dadata__suggestions" },
                 React.createElement("div", { className: "react-dadata__suggestion-note" }, "\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0432\u0430\u0440\u0438\u0430\u043D\u0442 \u0438\u043B\u0438 \u043F\u0440\u043E\u0434\u043E\u043B\u0436\u0438\u0442\u0435 \u0432\u0432\u043E\u0434"),
                 this.state.suggestions.map(function (suggestion, index) {
@@ -195,7 +230,7 @@ var ReactDadata = (function (_super) {
                         suggestionClass += ' react-dadata__suggestion--current';
                     }
                     return React.createElement("div", { key: suggestion.value, onMouseDown: _this.onSuggestionClick.bind(_this, index), className: suggestionClass },
-                        React.createElement(Highlighter, { highlightClassName: "react-dadata--highlighted", searchWords: _this.getHighlightWords(), textToHighlight: suggestion.value }));
+                        React.createElement(Highlighter, { highlightClassName: "react-dadata--highlighted", autoEscape: true, searchWords: _this.getHighlightWords(), textToHighlight: suggestion.value }));
                 }))));
     };
     return ReactDadata;

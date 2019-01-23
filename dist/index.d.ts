@@ -1,4 +1,3 @@
-/// <reference types="react" />
 import * as React from 'react';
 import './react-dadata.css';
 declare module 'react' {
@@ -88,11 +87,13 @@ export declare namespace ReactDadata {
         timezone: null;
         unparsed_parts: null;
     };
+    type BoundsType = 'region' | 'area' | 'city' | 'settlement' | 'street' | 'house';
     interface Props {
         token: string;
         placeholder?: string;
         query?: string;
         autoload?: boolean;
+        count?: number;
         onChange?: (suggestion: DadataSuggestion) => void;
         autocomplete?: string;
         validate?: (value: string) => void;
@@ -100,6 +101,10 @@ export declare namespace ReactDadata {
         customInput?: React.ReactNode;
         customInputRef?: string;
         updateStateFromProps?: (callback: any) => void;
+        fromBound?: BoundsType;
+        toBound?: BoundsType;
+        address?: DadataSuggestion;
+        className?: string;
     }
     interface State {
         query: string;
@@ -115,11 +120,11 @@ export declare class ReactDadata extends React.PureComponent<ReactDadata.Props, 
     /**
      * HTML-input
      */
-    protected textInput: HTMLInputElement;
+    protected textInput?: HTMLInputElement;
     /**
      * XMLHttpRequest instance
      */
-    protected xhr: XMLHttpRequest;
+    protected xhr?: XMLHttpRequest;
     constructor(props: ReactDadata.Props);
     componentDidMount(): void;
     onInputFocus: () => void;
@@ -128,11 +133,11 @@ export declare class ReactDadata extends React.PureComponent<ReactDadata.Props, 
     onKeyPress: (event: React.KeyboardEvent<HTMLInputElement>) => void;
     fetchSuggestions: (count?: number) => Promise<{}>;
     setSuggestionsToState: (responseJson: any) => void;
-    onSuggestionClick: (index: number, event: React.MouseEvent<HTMLDivElement>) => void;
+    onSuggestionClick: (index: number, event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
     selectSuggestion: (index: number) => void;
     setCursorToEnd: (element: any) => void;
     getHighlightWords: () => string[];
-    renderInput: () => React.DetailedReactHTMLElement<{
+    renderInput: (classNames: any) => React.DetailedReactHTMLElement<{
         [x: string]: string | boolean | ((value: string) => void) | ((event: React.ChangeEvent<HTMLInputElement>) => void) | ((event: React.KeyboardEvent<HTMLInputElement>) => void) | undefined;
         placeholder: string;
         value: string;
