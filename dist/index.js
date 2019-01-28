@@ -33,6 +33,9 @@ var ReactDadata = /** @class */ (function (_super) {
                 _this.fetchSuggestions()
                     .then(function (responseJson) { return _this.setSuggestionsToState(responseJson); });
             }
+            if (_this.props.onBlur) {
+                _this.props.onBlur(_this.state.inputQuery);
+            }
         };
         _this.onInputChange = function (event) {
             var value = event.target.value;

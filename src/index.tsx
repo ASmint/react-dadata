@@ -110,6 +110,7 @@ export namespace ReactDadata {
     toBound?: BoundsType
     address?: DadataSuggestion
     className?: string
+    onBlur?: (inputValue: string) => void
   }
 
   export interface State {
@@ -174,6 +175,9 @@ export class ReactDadata extends React.PureComponent<ReactDadata.Props, ReactDad
     if (this.state.suggestions.length == 0) {
       this.fetchSuggestions()
       .then(responseJson => this.setSuggestionsToState(responseJson));
+    }
+    if (this.props.onBlur) {
+      this.props.onBlur(this.state.inputQuery);
     }
   };
 

@@ -105,6 +105,7 @@ export declare namespace ReactDadata {
         toBound?: BoundsType;
         address?: DadataSuggestion;
         className?: string;
+        onBlur?: (inputValue: string) => void;
     }
     interface State {
         query: string;
