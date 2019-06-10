@@ -28,7 +28,7 @@ var ReactDadata = /** @class */ (function (_super) {
             }
         };
         _this.onInputBlur = function () {
-            _this.setState({ inputFocused: false });
+            _this.setState(function () { inputFocused: false; });
             if (_this.state.suggestions.length == 0) {
                 _this.fetchSuggestions()
                     .then(function (responseJson) { return _this.setSuggestionsToState(responseJson); });
@@ -232,7 +232,7 @@ var ReactDadata = /** @class */ (function (_super) {
                     if (index == _this.state.suggestionIndex) {
                         suggestionClass += ' react-dadata__suggestion--current';
                     }
-                    return React.createElement("div", { key: suggestion.value, onMouseDown: _this.onSuggestionClick.bind(_this, index), className: suggestionClass },
+                    return React.createElement("div", { key: suggestion.value, onClick: _this.onSuggestionClick.bind(_this, index), className: suggestionClass },
                         React.createElement(Highlighter, { highlightClassName: "react-dadata--highlighted", autoEscape: true, searchWords: _this.getHighlightWords(), textToHighlight: suggestion.value }));
                 }))));
     };
