@@ -363,7 +363,7 @@ export class ReactDadata extends React.PureComponent<ReactDadata.Props, ReactDad
             if (index == this.state.suggestionIndex) {
               suggestionClass += ' react-dadata__suggestion--current';
             }
-            return <div key={suggestion.value} onMouseDown={this.onSuggestionClick.bind(this, index)} className={suggestionClass}><Highlighter highlightClassName="react-dadata--highlighted" autoEscape={true} searchWords={this.getHighlightWords()} textToHighlight={suggestion.value}/></div>
+            return <div key={suggestion.value} onClick={this.onSuggestionClick.bind(this, index)} className={suggestionClass}><Highlighter highlightClassName="react-dadata--highlighted" autoEscape={true} searchWords={this.getHighlightWords()} textToHighlight={suggestion.value}/></div>
           })}
         </div>}
       </div>
