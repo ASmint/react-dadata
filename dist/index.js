@@ -28,7 +28,7 @@ var ReactDadata = /** @class */ (function (_super) {
             }
         };
         _this.onInputBlur = function () {
-            _this.setState(function () { inputFocused: false; });
+            setTimeout(function () { return _this.setState(function () { return { inputFocused: false }; }); }, 200);
             if (_this.state.suggestions.length == 0) {
                 _this.fetchSuggestions()
                     .then(function (responseJson) { return _this.setSuggestionsToState(responseJson); });

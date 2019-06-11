@@ -171,7 +171,7 @@ export class ReactDadata extends React.PureComponent<ReactDadata.Props, ReactDad
   };
 
   onInputBlur = () => {
-    this.setState(() => {inputFocused: false});
+    setTimeout(() => this.setState(() => {return {inputFocused: false}}), 200);
     if (this.state.suggestions.length == 0) {
       this.fetchSuggestions()
       .then(responseJson => this.setSuggestionsToState(responseJson));
